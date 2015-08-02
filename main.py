@@ -89,9 +89,9 @@ sm = ScreenManagerExtended(transition=FadeTransition())
 mainscreen = NewScreen(name="mainscreen")
 mainscreen.setbg(mainscreen,(1,1,1,1))
 titlebar = RootWidget()
-titlebar.setbg(titlebar,(0,0,1,1))
+titlebar.setbg(titlebar,(63.0/255.0,81.0/255.0,181.0/255.0,1))
 titlebar.size_hint = 1, .1
-titlebar.pos_hint = {"x":0,"y":0}
+titlebar.pos_hint = {"x":0,"y":0.9}
 mainscreen.add_widget(titlebar)
 sm.add_widget(mainscreen)
 sm.current = "mainscreen"
