@@ -92,6 +92,9 @@ titlebar = RootWidget()
 titlebar.setbg(titlebar,(63.0/255.0,81.0/255.0,181.0/255.0,1))
 titlebar.size_hint = 1, .1
 titlebar.pos_hint = {"x":0,"y":0.9}
+titlelab = Lable(text="SCHOLLGYM.de",font_size="15sp",color=(1,1,1,1))
+titlelab.pos_hint = {"x":0,"y":0}
+titlebar.add_widget(titlelab)
 mainscreen.add_widget(titlebar)
 sm.add_widget(mainscreen)
 sm.current = "mainscreen"
