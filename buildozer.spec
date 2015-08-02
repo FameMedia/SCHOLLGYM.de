@@ -35,7 +35,7 @@ version = 1.0
 requirements = kivy
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/school.png
+presplash.filename = %(source.dir)s/school_white.png
 
 # (str) Icon of the application
 icon.filename = %(source.dir)s/school.png
