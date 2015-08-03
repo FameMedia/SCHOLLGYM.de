@@ -16,6 +16,7 @@ from kivy.uix.textinput import *
 from kivy.uix.carousel import Carousel
 from kivy.base import EventLoop
 from kivy.uix.popup import Popup
+from kivy.uix.scatterlayout import ScatterLayout
 from kivy.uix.actionbar import *
 from kivy.uix.togglebutton import *
 from kivy.graphics.instructions import Instruction, InstructionGroup
@@ -23,7 +24,7 @@ from kivy.core.window import Window
 from kivy.uix.bubble import Bubble
 import zipfile
 import os
-
+menopen = False
 
 class ScreenManagerExtended(ScreenManager):
     background_color = ObjectProperty(Color(1,1,1,1))
@@ -82,9 +83,19 @@ def clone(_from,to):
     file.close()
     #connectdone = True
     return t
-
-
-
+def openmen(KEY=""):
+    global titleflow, menopen
+    if menopen == True:
+        closemen()
+        menopen = False
+        return 0
+    menopen = True
+    am = Animation(rotation=180,t="in_quad",duration=.2,step=1.0/180.0)
+    am.start(titlescat)
+def closemen():
+    global titleflow
+    am = Animation(rotation=0,t="in_quad",duration=.2)
+    am.start(titlescat)
 sm = ScreenManagerExtended(transition=FadeTransition())
 mainscreen = NewScreen(name="mainscreen")
 mainscreen.setbg(mainscreen,(1,1,1,1))
@@ -92,8 +103,23 @@ titlebar = RootWidget()
 titlebar.setbg(titlebar,(63.0/255.0,81.0/255.0,181.0/255.0,1))
 titlebar.size_hint = 1, .1
 titlebar.pos_hint = {"x":0,"y":0.9}
-titlelab = Lable(text="SCHOLLGYM.de",font_size="15sp",color=(1,1,1,1))
+titlelab = Label(text="SCHOLLGYM.de",font_size="20sp",color=(1,1,1,1))
 titlelab.pos_hint = {"x":0,"y":0}
+titlescat = ScatterLayout()
+titlescat.size_hint = None,None
+titlescat.size = 48,48
+titlescat.pos_hint = {"x":0.025,"y":.3}
+mencanv = RootWidget()
+mencanv.size_hint= .1,.6
+mencanv.pos_hint = {"x":0.025,"y":.2}
+#titlebar.add_widget(mencanv)
+titlebar.add_widget(titlescat)
+titleflow = Button(background_normal="school.png",background_down="school.png")
+titleflow.size_hint = None,None
+titleflow.size = 48,48
+titleflow.pos_hint = {"x":0,"y":0}
+titleflow.bind(on_release=openmen)
+titlescat.add_widget(titleflow)
 titlebar.add_widget(titlelab)
 mainscreen.add_widget(titlebar)
 sm.add_widget(mainscreen)
