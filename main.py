@@ -70,6 +70,8 @@ class RootWidget(FloatLayout):
         self.rect.pos = instance.pos
         self.rect.size = instance.size
 
+def sleep(time,todo):
+    Clock.schedule_once(todo,time)
 
 
 def clone(_from,to):
@@ -96,9 +98,28 @@ def closemen():
     global titleflow
     am = Animation(rotation=0,t="in_quad",duration=.2)
     am.start(titlescat)
-sm = ScreenManagerExtended(transition=FadeTransition())
+def goto_start(KEY=""):
+    global sm, sc
+    sc.size_hint = None,None
+    sc.size = 48,48
+    sc.pos_hint_x = None
+    sc.pos_hint_y = None
+    sc.pos = (winsize[0]/2,winsize[1]/2)
+    am = Animation(size=(0,0))
+    am &= Animation(pos=(winsize[0]/2,winsize[1]/2))
+    am.start(sc)
+    sleep(.8,goto_main)
+def goto_main(KEY=""):
+    global sm
+    sm.current="mainscreen"
+winsize = (Window.width,Window.height)
+sm = ScreenManagerExtended()
 mainscreen = NewScreen(name="mainscreen")
 mainscreen.setbg(mainscreen,(1,1,1,1))
+logonscreen = NewScreen(name="logonscreen")
+sc = Image(source="school_white.png")
+sm.add_widget(logonscreen)
+logonscreen.add_widget(sc)
 titlebar = RootWidget()
 titlebar.setbg(titlebar,(63.0/255.0,81.0/255.0,181.0/255.0,1))
 titlebar.size_hint = 1, .1
@@ -108,7 +129,7 @@ titlelab.pos_hint = {"x":0,"y":0}
 titlescat = ScatterLayout()
 titlescat.size_hint = None,None
 titlescat.size = 48,48
-titlescat.pos_hint = {"x":0.025,"y":.3}
+titlescat.pos_hint = {"x":0.025,"y":.25}
 mencanv = RootWidget()
 mencanv.size_hint= .1,.6
 mencanv.pos_hint = {"x":0.025,"y":.2}
@@ -123,7 +144,8 @@ titlescat.add_widget(titleflow)
 titlebar.add_widget(titlelab)
 mainscreen.add_widget(titlebar)
 sm.add_widget(mainscreen)
-sm.current = "mainscreen"
+sm.current = "logonscreen"
+
 logo = Image(source="school.png")
 mainscreen.add_widget(logo)
 
@@ -132,6 +154,7 @@ class MainApp(App):
     
     def build(self):
         global sm
+        sleep(1,goto_start)
         return sm
 
 if __name__ == "__main__":
