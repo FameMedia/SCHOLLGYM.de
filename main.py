@@ -86,17 +86,22 @@ def clone(_from,to):
     #connectdone = True
     return t
 def openmen(KEY=""):
-    global titleflow, menopen
+    global titleflow, menopen,sidebar
     if menopen == True:
         closemen()
         menopen = False
         return 0
     menopen = True
-    am = Animation(rotation=180,t="in_quad",duration=.2,step=1.0/180.0)
+    am = Animation(rotation=180,duration=.2,step=1.0/180.0)
+    am2 = Animation(pos_hint={"x":0,"y":0},duration=.2)
+    am2.start(sidebar)
     am.start(titlescat)
+    
 def closemen():
     global titleflow
-    am = Animation(rotation=0,t="in_quad",duration=.2)
+    am = Animation(rotation=0,duration=.2)
+    am2 = Animation(pos_hint={"x":-.4,"y":0},duration=.2)
+    am2.start(sidebar)
     am.start(titlescat)
 def goto_start(KEY=""):
     global sm, sc
@@ -128,6 +133,14 @@ titlelab = Label(text="SCHOLLGYM.de",font_size="20sp",color=(1,1,1,1))
 titlelab.pos_hint = {"x":0,"y":0}
 titlescat = ScatterLayout()
 titlescat.size_hint = None,None
+sidebar = RootWidget()
+sidebar.setbg(sidebar,(.8,.8,.8,1))
+sidebar.size_hint = .4,.9
+sidebar.pos_hint = {"x":-.4,"y":0}
+sidetitle = Label(text="Optionen",font_size="25sp",color=(0,0,0,1))
+sidetitle.pos_hint = {"x":0,"y":.4}
+sidebar.add_widget(sidetitle)
+mainscreen.add_widget(sidebar)
 titlescat.size = 48,48
 titlescat.pos_hint = {"x":0.025,"y":.25}
 mencanv = RootWidget()
