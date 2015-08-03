@@ -104,7 +104,7 @@ def goto_start(KEY=""):
     sc.size = 48,48
     sc.pos_hint_x = None
     sc.pos_hint_y = None
-    sc.pos = (winsize[0]/2,winsize[1]/2)
+    sc.pos = (int(winsize[0]/2)-24,int(winsize[1]/2)-24)
     am = Animation(size=(0,0))
     am &= Animation(pos=(winsize[0]/2,winsize[1]/2))
     am.start(sc)
