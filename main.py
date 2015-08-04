@@ -92,14 +92,14 @@ def openmen(KEY=""):
         menopen = False
         return 0
     menopen = True
-    am = Animation(rotation=180,duration=.2,step=1.0/180.0)
+    am = Animation(size=(24,24),duration=.2)
     am2 = Animation(pos_hint={"x":0,"y":0},duration=.2)
     am2.start(sidebar)
     am.start(titlescat)
     
 def closemen():
     global titleflow
-    am = Animation(rotation=0,duration=.2)
+    am = Animation(size=(48,48),duration=.2)
     am2 = Animation(pos_hint={"x":-.4,"y":0},duration=.2)
     am2.start(sidebar)
     am.start(titlescat)
