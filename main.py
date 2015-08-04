@@ -95,14 +95,14 @@ def openmen(KEY=""):
     am = Animation(size=(24,24),duration=.2)
     am2 = Animation(pos_hint={"x":0,"y":0},duration=.2)
     am2.start(sidebar)
-    am.start(titlescat)
+    am.start(titleflow)
     
 def closemen():
     global titleflow
     am = Animation(size=(48,48),duration=.2)
     am2 = Animation(pos_hint={"x":-.4,"y":0},duration=.2)
     am2.start(sidebar)
-    am.start(titlescat)
+    am.start(titleflow)
 def goto_start(KEY=""):
     global sm, sc
     sc.size_hint = None,None
