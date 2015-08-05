@@ -25,6 +25,7 @@ from kivy.uix.bubble import Bubble
 import zipfile
 import os
 menopen = False
+inprogress = False
 
 class ScreenManagerExtended(ScreenManager):
     background_color = ObjectProperty(Color(1,1,1,1))
@@ -92,15 +93,17 @@ def openmen(KEY=""):
         menopen = False
         return 0
     menopen = True
-    am = Animation(size=(24,24),duration=.2)
-    am2 = Animation(pos_hint={"x":0,"y":0},duration=.2)
+    startprog("Menu Open")
+    am = Animation(size=(24,24),duration=.2,t="in_quad")
+    am2 = Animation(pos_hint={"x":0,"y":0},duration=.2 ,t="in_quad")
     am2.start(sidebar)
     am.start(titleflow)
     
 def closemen():
     global titleflow
-    am = Animation(size=(48,48),duration=.2)
-    am2 = Animation(pos_hint={"x":-.4,"y":0},duration=.2)
+    stopprog()
+    am = Animation(size=(48,48),duration=.2 ,t="in_quad")
+    am2 = Animation(pos_hint={"x":-.8,"y":0},duration=.2 ,t="in_quad") 
     am2.start(sidebar)
     am.start(titleflow)
 def goto_start(KEY=""):
@@ -117,6 +120,47 @@ def goto_start(KEY=""):
 def goto_main(KEY=""):
     global sm
     sm.current="mainscreen"
+    sleep(.5,welcome)
+def welcome(KEY=""):
+    startprog("welcome")
+    sleep(3,welcome2)
+def welcome2(KEY=""):
+    startprog("Developer\nMode")
+    sleep(3,stopprog)
+def startprog(msg):
+    global inprogress,proglabel,progmsg
+    if inprogress:
+        am = Animation(duration=.5,pos_hint={"x":.3,"y":1},color=(1,1,1,0),t="in_quad")
+        am2 = Animation(duration=.5,pos_hint={"x":1.1,"y":0},t="in_quad")
+        am2.start(progimg)
+        am.start(proglabel)
+        sleep(.5,newprog)
+        progmsg = msg
+    else:
+        proglabel.text = msg
+        openprog()
+    inprogress = True
+    
+def newprog(KEY=""):
+    global proglabel,progmsg,progimg
+    msg = progmsg
+    proglabel.text = msg
+    proglabel.pos_hint = {"x":.3,"y":-.4}
+    progimg.pos_hint = {"x":.9,"y":-.4}
+    openprog()
+def openprog(KEY=""):
+    global proglabel
+    am = Animation(duration=.5,pos_hint={"x":.3,"y":0},color=(1,1,1,1),t="in_quad")
+    am.start(proglabel)
+    am2 = Animation(duration=.5,pos_hint={"x":.9,"y":0},t="in_quad")
+    am2.start(progimg)
+def stopprog(KEY=""):
+    global inprogress, proglabel
+    inprogress = False
+    am = Animation(duration=.5,pos_hint={"x":.3,"y":-.4},color=(1,1,1,0),t="in_quad")
+    am.start(proglabel)
+    am2 = Animation(duration=.5,pos_hint={"x":1.2,"y":0},t="in_quad")
+    am2.start(progimg)
 winsize = (Window.width,Window.height)
 sm = ScreenManagerExtended()
 mainscreen = NewScreen(name="mainscreen")
@@ -130,13 +174,22 @@ titlebar.setbg(titlebar,(63.0/255.0,81.0/255.0,181.0/255.0,1))
 titlebar.size_hint = 1, .1
 titlebar.pos_hint = {"x":0,"y":0.9}
 titlelab = Label(text="SCHOLLGYM.de",font_size="20sp",color=(1,1,1,1))
-titlelab.pos_hint = {"x":0,"y":0}
+proglabel = Label(text="None\nDeveloper",color=(1,1,1,0),font_size="13sp")
+#proglabel.pos_hint_x = .2
+#proglabel.pos_hint_y = 0
+proglabel.pos_hint = {"x":.3,"y":-.4}
+progimg = Image(source="loading.gif",anim_delay=0.05)
+progimg.size_hint = .1,.8
+progimg.pos_hint ={"x":.9,"y":-.4}
+titlebar.add_widget(progimg)
+titlebar.add_widget(proglabel)
+titlelab.pos_hint = {"x":-.1,"y":0}
 titlescat = ScatterLayout()
 titlescat.size_hint = None,None
 sidebar = RootWidget()
 sidebar.setbg(sidebar,(.8,.8,.8,1))
-sidebar.size_hint = .4,.9
-sidebar.pos_hint = {"x":-.4,"y":0}
+sidebar.size_hint = .8,.9
+sidebar.pos_hint = {"x":-.8,"y":0}
 sidetitle = Label(text="Optionen",font_size="25sp",color=(0,0,0,1))
 sidetitle.pos_hint = {"x":0,"y":.4}
 sidebar.add_widget(sidetitle)
