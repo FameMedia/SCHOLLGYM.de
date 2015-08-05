@@ -245,7 +245,7 @@ proglabel = Label(text="None\nDeveloper",color=(1,1,1,0),font_size="13sp")
 #proglabel.pos_hint_x = .2
 #proglabel.pos_hint_y = 0
 proglabel.pos_hint = {"x":.3,"y":-.4}
-progimg = Image(source="loading.gif",anim_delay=0.05)
+progimg = Image(source="loading.zip",anim_delay=0.05)
 progimg.size_hint = .1,.8
 progimg.pos_hint ={"x":.9,"y":-.4}
 titlebar.add_widget(progimg)
