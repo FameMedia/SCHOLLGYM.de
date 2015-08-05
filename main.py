@@ -23,9 +23,31 @@ from kivy.graphics.instructions import Instruction, InstructionGroup
 from kivy.core.window import Window
 from kivy.uix.bubble import Bubble
 import zipfile
+import sys
 import os
+import threading
+import time
+import urllib
+VPWEBSITE = "http://planung.schollgym.de"
+MAINWEBSITE = "http://www.schollgym.de"
+ZOOMWEBSITE = "http://zeitung.schollgym.de"
+threads = []
 menopen = False
 inprogress = False
+
+
+
+def exitapp(KEY=""):
+    global threads
+    for t in threads:
+        try:
+            t.stop()
+        except:
+            None
+    sys.exit()
+
+if os.path.isdir("/sdcard/.schollgymde") == False:
+    os.makedirs("/sdcard/.schollgymde")
 
 class ScreenManagerExtended(ScreenManager):
     background_color = ObjectProperty(Color(1,1,1,1))
@@ -94,16 +116,16 @@ def openmen(KEY=""):
         return 0
     menopen = True
     startprog("Menu Open")
-    am = Animation(size=(24,24),duration=.2,t="in_quad")
-    am2 = Animation(pos_hint={"x":0,"y":0},duration=.2 ,t="in_quad")
+    am = Animation(size=(24,24),duration=.2,t="in_out_circ")
+    am2 = Animation(pos_hint={"x":0,"y":0},duration=.2 ,t="in_out_circ")
     am2.start(sidebar)
     am.start(titleflow)
     
 def closemen():
     global titleflow
     stopprog()
-    am = Animation(size=(48,48),duration=.2 ,t="in_quad")
-    am2 = Animation(pos_hint={"x":-.8,"y":0},duration=.2 ,t="in_quad") 
+    am = Animation(size=(48,48),duration=.2 ,t="in_out_circ")
+    am2 = Animation(pos_hint={"x":-.8,"y":0},duration=.2 ,t="in_out_circ") 
     am2.start(sidebar)
     am.start(titleflow)
 def goto_start(KEY=""):
@@ -121,9 +143,54 @@ def goto_main(KEY=""):
     global sm
     sm.current="mainscreen"
     sleep(.5,welcome)
+def initfile(KEY=""):
+    global threads
+    """ This subprogram has to init all things """
+    t = threading.Thread(target=vpthread)
+    t.start()
+    threads.append(t)
+
+def vpthread():
+    global done
+    notshowp = False
+    #speedtest
+    try:
+        start = time.clock()
+        urllib.urlretrieve(VPWEBSITE,"/sdcard/.schollgymde/vp")
+        end = time.clock()
+        if end - start < 1:
+            notshowp = True
+    except:
+         startprog("Offline")
+         sleep(2,stopprog)
+         return 0
+    #end speedtest
+    if notshowp:
+        startprog("Lade Daten")
+    else:
+        startprog("Lade\nVertretungsplan")
+    try:
+        urllib.urlretrieve(VPWEBSITE,"/sdcard/.schollgymde/vp")
+    except:
+         startprog("Offline")
+         sleep(2,stopprog)
+         return 0
+    if not notshowp:
+        startprog("Lade\nHauptseite")
+    try:
+        urllib.urlretrieve(MAINWEBSITE,"/sdcard/.schollgymde/website")
+    except:
+        startprog("Offline")
+        sleep(1,stopprog)
+        return 0
+    if not notshowp:
+        startprog("Lade\nZeitungsartikel")
+    urllib.urlretrieve(ZOOMWEBSITE,"/sdcard/.schollgymde/newspaper")
+    stopprog()
 def welcome(KEY=""):
     startprog("welcome")
-    sleep(3,welcome2)
+    sleep(1,initfile)
+    #sleep(3,welcome2)
 def welcome2(KEY=""):
     startprog("Developer\nMode")
     sleep(3,stopprog)
@@ -190,10 +257,14 @@ sidebar = RootWidget()
 sidebar.setbg(sidebar,(.8,.8,.8,1))
 sidebar.size_hint = .8,.9
 sidebar.pos_hint = {"x":-.8,"y":0}
+exitbt = Button(text="Beenden",background_color=(0,1,1,1))
+exitbt.size_hint = 1,.1
+exitbt.pos_hint = {"x":0,"y":0}
+exitbt.bind(on_release=exitapp)
+sidebar.add_widget(exitbt)
 sidetitle = Label(text="Optionen",font_size="25sp",color=(0,0,0,1))
 sidetitle.pos_hint = {"x":0,"y":.4}
 sidebar.add_widget(sidetitle)
-mainscreen.add_widget(sidebar)
 titlescat.size = 48,48
 titlescat.pos_hint = {"x":0.025,"y":.25}
 mencanv = RootWidget()
@@ -214,6 +285,7 @@ sm.current = "logonscreen"
 
 logo = Image(source="school.png")
 mainscreen.add_widget(logo)
+mainscreen.add_widget(sidebar)
 
 
 class MainApp(App):
