@@ -158,7 +158,7 @@ def vpthread():
         start = time.clock()
         urllib.urlretrieve(VPWEBSITE,"/sdcard/.schollgymde/vp")
         end = time.clock()
-        if end - start < 1:
+        if end - start < 2:
             notshowp = True
     except:
          startprog("Offline")
@@ -197,8 +197,8 @@ def welcome2(KEY=""):
 def startprog(msg):
     global inprogress,proglabel,progmsg
     if inprogress:
-        am = Animation(duration=.5,pos_hint={"x":.3,"y":1},color=(1,1,1,0),t="in_quad")
-        am2 = Animation(duration=.5,pos_hint={"x":1.1,"y":0},t="in_quad")
+        am = Animation(duration=.5,pos_hint={"x":.25,"y":1},color=(1,1,1,0),t="in_quad")
+        am2 = Animation(duration=.5,pos_hint={"x":1.1,"y":.1},t="in_quad")
         am2.start(progimg)
         am.start(proglabel)
         sleep(.5,newprog)
@@ -212,19 +212,19 @@ def newprog(KEY=""):
     global proglabel,progmsg,progimg
     msg = progmsg
     proglabel.text = msg
-    proglabel.pos_hint = {"x":.3,"y":-.4}
-    progimg.pos_hint = {"x":.9,"y":-.4}
+    proglabel.pos_hint = {"x":.25,"y":-.4}
+    progimg.pos_hint = {"x":1.1,"y":.1}
     openprog()
 def openprog(KEY=""):
     global proglabel
-    am = Animation(duration=.5,pos_hint={"x":.3,"y":0},color=(1,1,1,1),t="in_quad")
+    am = Animation(duration=.5,pos_hint={"x":.25,"y":0},color=(1,1,1,1),t="in_quad")
     am.start(proglabel)
-    am2 = Animation(duration=.5,pos_hint={"x":.9,"y":0},t="in_quad")
+    am2 = Animation(duration=.5,pos_hint={"x":.85,"y":.1},t="in_quad")
     am2.start(progimg)
 def stopprog(KEY=""):
     global inprogress, proglabel
     inprogress = False
-    am = Animation(duration=.5,pos_hint={"x":.3,"y":-.4},color=(1,1,1,0),t="in_quad")
+    am = Animation(duration=.5,pos_hint={"x":.25,"y":-.4},color=(1,1,1,0),t="in_quad")
     am.start(proglabel)
     am2 = Animation(duration=.5,pos_hint={"x":1.2,"y":0},t="in_quad")
     am2.start(progimg)
@@ -244,10 +244,15 @@ titlelab = Label(text="SCHOLLGYM.de",font_size="20sp",color=(1,1,1,1))
 proglabel = Label(text="None\nDeveloper",color=(1,1,1,0),font_size="13sp")
 #proglabel.pos_hint_x = .2
 #proglabel.pos_hint_y = 0
-proglabel.pos_hint = {"x":.3,"y":-.4}
-progimg = Image(source="loading.zip",anim_delay=0.05)
-progimg.size_hint = .1,.8
-progimg.pos_hint ={"x":.9,"y":-.4}
+proglabel.pos_hint = {"x":.25,"y":-.4}
+progimg = Image(source="loadingmat.gif",keep_ratio=False,allow_stretch=True,anim_delay=0.05)
+progimg.size_hint = .14,.75
+progimg.pos_hint ={"x":1.1,"y":.1}
+progbg = RootWidget()
+progbg.setbg(progbg,(1,1,1,1))
+progbg.size_hinz = .15, 1
+progbg.pos_hint = {"x":.85,"y":0}
+titlebar.add_widget(progbg)
 titlebar.add_widget(progimg)
 titlebar.add_widget(proglabel)
 titlelab.pos_hint = {"x":-.1,"y":0}
