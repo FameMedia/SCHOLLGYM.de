@@ -256,7 +256,7 @@ titlebar = RootWidget()
 titlebar.setbg(titlebar,(63.0/255.0,81.0/255.0,181.0/255.0,1))
 titlebar.size_hint = 1, .1
 titlebar.pos_hint = {"x":0,"y":0.9}
-vpopenbt = Button(background_normal="bag.png",background_down="bag.png" pos_hint={"x":.85,"y":.78},size_hint=(.15,.12),background_color=(63.0/255.0,81.0/255.0,181.0/255.0,1))
+vpopenbt = Button(background_normal="bag.png",background_down="bag.png", pos_hint={"x":.85,"y":.78},size_hint=(.15,.12),background_color=(63.0/255.0,81.0/255.0,181.0/255.0,1))
 vpopenbt.bind(on_release=openvp)
 vpframe = RootWidget()
 vpframe.setbg(vpframe,(.9,.9,.9,1))
