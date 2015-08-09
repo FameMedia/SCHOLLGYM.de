@@ -116,7 +116,7 @@ def openmen(KEY=""):
         return 0
     menopen = True
     startprog("Menu Open")
-    am = Animation(size=(24,24),duration=.2,t="in_out_circ")
+    am = Animation(size=(52,52),duration=.2,t="in_out_circ")
     am2 = Animation(pos_hint={"x":0,"y":0},duration=.2 ,t="in_out_circ")
     am2.start(sidebar)
     am.start(titleflow)
@@ -228,6 +228,22 @@ def stopprog(KEY=""):
     am.start(proglabel)
     am2 = Animation(duration=.5,pos_hint={"x":1.2,"y":0},t="in_quad")
     am2.start(progimg)
+def openvp(KEY=""):
+    global vpframe,vpopenbt,vpisopen
+    if vpisopen:
+        am = Animation(duration=1,pos_hint={"x":1,"y":1},t="in_out_circ")
+        am2 = Animation(duration=1,pos_hint={"x":.85,"y":.78},t="in_out_circ")
+        am.start(vpframe)
+        am2.start(vpopenbt)
+        vpisopen = False
+        return 0
+
+    vpisopen = True
+    am = Animation(duration=1,pos_hint={"x":.3,"y":.3},t="in_out_circ")
+    am2 = Animation(duration=1,pos_hint={"x":.15,"y":.18},t="in_out_circ")
+    am.start(vpframe)
+    am2.start(vpopenbt)
+vpisopen = False
 winsize = (Window.width,Window.height)
 sm = ScreenManagerExtended()
 mainscreen = NewScreen(name="mainscreen")
@@ -240,6 +256,17 @@ titlebar = RootWidget()
 titlebar.setbg(titlebar,(63.0/255.0,81.0/255.0,181.0/255.0,1))
 titlebar.size_hint = 1, .1
 titlebar.pos_hint = {"x":0,"y":0.9}
+vpopenbt = Button(background_normal="bag.png",background_down="bag.png",pos_hint={"x":.85,"y":.78},size_hint=(.15,.12),background_color=(63.0/255.0,81.0/255.0,181.0/255.0,1))
+vpopenbt.bind(on_release=openvp)
+vpframe = RootWidget()
+vpframe.setbg(vpframe,(.9,.9,.9,1))
+vpframe.size_hint = .7,.7
+vpframe.pos_hint = {"x":1,"y":1}
+vpinf = Label(text="KEIN\nVERTRETUNGSPLAN\nVORHANDEN",color=(0,0,0,1),font_size="20sp")
+vpinf.pos_hint = {"x":0,"y":0}
+vpframe.add_widget(vpinf)
+mainscreen.add_widget(vpframe)
+mainscreen.add_widget(vpopenbt)
 titlelab = Label(text="SCHOLLGYM.de",font_size="20sp",color=(1,1,1,1))
 proglabel = Label(text="None\nDeveloper",color=(1,1,1,0),font_size="13sp")
 #proglabel.pos_hint_x = .2
@@ -289,7 +316,7 @@ sm.add_widget(mainscreen)
 sm.current = "logonscreen"
 
 logo = Image(source="school.png")
-mainscreen.add_widget(logo)
+#mainscreen.add_widget(logo)
 mainscreen.add_widget(sidebar)
 
 
