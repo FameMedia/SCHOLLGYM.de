@@ -32,7 +32,7 @@ source.include_exts = py,png,jpg,kv,atlas,gif,zip
 version = 1.0
 
 # (list) Application requirements
-requirements = kivy,pil
+requirements = kivy
 
 # (str) Presplash of the application
 presplash.filename = %(source.dir)s/school_white.png
