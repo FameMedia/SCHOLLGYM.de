@@ -4,7 +4,10 @@ from plyer.utils import platform
 from plyer.compat import PY2
 from plyer import vibrator
 
-notification.notify(title="hallo",message="welt")
+
+
+
+#notification.notify(title="",message="welt")
 
 from lxml import etree
 import HTMLParser
@@ -19,10 +22,12 @@ import urllib
 VPWEBSITE = "http://vertretung.lornsenschule.de/schueler/f1/subst_001.htm"
 MAINWEBSITE = "http://www.schollgym.de"
 ZOOMWEBSITE = "http://zeitung.schollgym.de"
-
+nums = "1234567890"
+alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 CLASS = "05d"
 
+oldn = ""
 
 
 def vpthread():
@@ -40,6 +45,7 @@ def vpthread():
         urllib.urlretrieve(ZOOMWEBSITE,"/sdcard/.schollgymde/newspaper")
     except:
          return 0
+    #notification.notify(title="hallo",message="parsing")
     parse()
 
 
@@ -49,6 +55,7 @@ def parse():
     p = TableParser()
     p.feed(vpt)
     parsed = p.getres()
+    #notification.notify(title="hallo",message="filled the parser")
     parts = []
     formyclass = False
     subjcntr = 0
@@ -120,11 +127,27 @@ class TableParser(HTMLParser.HTMLParser):
 
 
 def fill(l):
+    global oldn
     n = ""
+    #notification.notify(title="hallo",message="end of parsing fill")
     for item in l:
-        n+= item[0]+". "+item[2]
-    notification.notify(title="Neue Vertretung(en)",message=n)
-    
+        n+= item[0]+". "+item[2] + ", "
+    if len(l) > 4:
+        n = str(len(l))+ "Vertretungen"
+    if n != oldn:
+        vibrator.vibrate(1)
+        time.sleep(1.2)
+        oldn = n
+        vibrator.vibrate(0.2)
+        time.sleep(0.4)
+        vibrator.vibrate(0.2)
+        time.sleep(0.4)
+        vibrator.vibrate(0.2)
+        time.sleep(0.4)
+        vibrator.vibrate(1)
+    #notification.notify(title="hallo",message="end of parsing end")
+    if n != "" :
+        notification.notify(title="Neue Vertretung(en)",message=n)
 
 
 while True:

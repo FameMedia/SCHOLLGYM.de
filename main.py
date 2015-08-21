@@ -60,6 +60,7 @@ import zipfile
 import sys
 import os
 import lxml.html
+import ftplib
 import threading
 import time
 import urllib
@@ -73,11 +74,55 @@ inprogress = False
 platform = "android"
 
 
+
+from jnius import autoclass
+PythonActivity = autoclass('org.renpy.android.PythonActivity')
+
+def toast(msg):
+    PythonActivity.toastError(msg)
+
+
+
+
 nums = "1234567890"
 alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 def rotate(KEY=""):
     Window.rotation = 270
+
+
+
+def clone(_from,to):
+    global connectdone
+    #connectdone = False
+    file = open(to,"wb")
+    server.retrbinary("RETR "+_from,file.write)
+    file.close()
+    file = open(to,"r")
+    t = file.read().replace("\\n","\n")
+    file.close()
+    #connectdone = True
+    return t
+def store(name,text):
+    f = open("tmp","w")
+    f.write(text)
+    f.close()
+    file = open("tmp","r")
+    server.storbinary("STOR "+name,file)
+    file.close()
+    os.remove("tmp")
+
+
+
+
+def startftp(KEY=""):
+    global server
+    #printd("[FTP] Connecting to server...")
+    server = ftplib.FTP("ftp.lima-city.de")
+    #printd("[FTP] logging in to server...")
+    server.login("schollgym","SchollGym15")
+
+
 
 
 def log(msg,timestamp=True):
@@ -423,10 +468,42 @@ def licnok(key=""):
 
 def savesets(KEY=""):
     global sm
-    sm.current = "mainscreen"
+    startftp()
+    usr = usrnorm = clone("/usr/index","r")
+    usr = usr.split("\n")
+    foundname = False
+    for name in usr:
+        if name == setname.text+":"+setname2.text:
+            foundname = True
+    if foundname:
+        toast("Name schon vergeben")
+        return 0
+    store("/usr/index",usrnorm+setname.text+":"+setname2.text+"\n")
+    server.mkd("/usr/"+setname.text+setname2.text)
+    sdata("usrname",setname.text)
+    sdata("usrname2",setname2.text)
     file = open("/sdcard/.schollgymde/sets","w")
     file.write(setclass.text)
     file.close()
+    goto_start()
+
+
+def data(name,notfound=False):
+    if os.path.isfile("/sdcard/.schollgymde/"+name) == False:
+        return notfound
+    f = open("/sdcard/.schollgymde/"+name,"r")
+    t = f.read()
+    f.close()
+    return t
+
+
+
+def sdata(name,content):
+    f = open("/sdcard/.schollgymde/"+name,"w")
+    f.write(content)
+    f.close()
+
+
 
 def goto_secure(KEY=""):
     global sm
@@ -445,6 +522,24 @@ def ts(text):
     threading.Thread(target=writets).start()
 
 
+
+
+def acdata(name,notfound=False):
+    try:
+        t = clone("/usr/"+usrid+"/"+name,"r")
+        return t
+    except:
+        return notfound
+
+
+def sacdata(name,content):
+    store("/usr/"+usrid+"/"+name,content)
+
+    
+
+
+
+
 def showdeny():
     global secac, denyframe
     for i in range(2):
@@ -461,13 +556,38 @@ def wronglogin(KEY=""):
     sm.current = "secac"
     threading.Thread(target=showdeny).start()
 
+
+
+def usrlogin(KEY=""):
+    global usrid
+    oldusrid = usrid
+    usrid = secname.text+secpwd.text
+    if acdata("dev") == False:
+        sleep(1,wronglogin)
+        usrid = oldusrid
+        return 0
+    usrid = oldusrid
+    ts("\n\nWaiting for your commands\n\nFTP Server: / , local: ~  $")
+
+
+def cmdftp(KEY=""):
+    try:
+       startftp()
+       ts("\nServer connection: OK\n")
+       sleep(2.5,usrlogin)
+       #sleep(2.5,wronglogin)
+    except Exception as e:
+        ts("\nERROR: "+str(e)+"\n")
+        sleep(5,wronglogin)
+
 def termlogon(KEY=""):
     global sm
     # server things
     sm.transition = NoTransition()
     sm.current = "termscreen"
     ts("ASapplications Development Security Access Console ADSAC\nThis place is absolutely secure and blocked for all normal users.\nChecking User Credentials...")
-    sleep(5,wronglogin)
+    sleep(4,cmdftp)
+    #sleep(5,wronglogin)
 
 
 vpisopen = False
@@ -528,6 +648,12 @@ settingss.add_widget(settitle)
 
 setclass = TextInput(text="Deine Klasse und Buchstabe (z.B. 8d)",multiline=False,size_hint=(.9,.1),pos_hint={"x":.05,"y":.8})
 settingss.add_widget(setclass)
+
+setname = TextInput(text="Vorname",multiline=False,pos_hint={"x":0,"y":.7},size_hint=(.5,.1))
+
+setname2 = TextInput(text="Nachnahme (Nutze echte Angaben)",multiline=False,pos_hint={"x":.5,"y":.7},size_hint=(.5,.1))
+settingss.add_widget(setname2)
+settingss.add_widget(setname)
 
 oksets = Button(text="Abspeichern",size_hint=(1,.1),pos_hint={"x":0,"y":0})
 settingss.add_widget(oksets)
@@ -604,12 +730,12 @@ exitbt.bind(on_release=exitapp)
 sidebar.add_widget(exitbt)
 secbt = Button(text="Entwickler - Bereich",background_color=(0,0,0,1))
 secbt.size_hint = 1,.1
-secbt.pos_hint = {"x":0,"y":.9}
+secbt.pos_hint = {"x":0,"y":.8}
 sm.add_widget(secac)
 secbt.bind(on_release=goto_secure)
 sidebar.add_widget(secbt)
 sidetitle = Label(text="Optionen",font_size="25sp",color=(0,0,0,1))
-sidetitle.pos_hint = {"x":0,"y":.4}
+sidetitle.pos_hint = {"x":0,"y":.45}
 sidebar.add_widget(sidetitle)
 titlescat.size = 48,48
 titlescat.pos_hint = {"x":0.025,"y":.25}
@@ -633,6 +759,19 @@ sm.current = "logonscreen"
 logo = Image(source="school.png")
 #mainscreen.add_widget(logo)
 mainscreen.add_widget(sidebar)
+
+
+
+
+
+us1 = data("usrname")
+us2 = data("usrname2")
+
+if us1:
+    usrid = us1+us2
+
+
+
 
 
 class MainApp(App):
