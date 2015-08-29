@@ -33,6 +33,7 @@ Der Eigentuemer dieser App ist ASapplications (R)
 
 from kivy.app import App
 from kivy.animation import Animation
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.dropdown import DropDown
 from kivy.graphics import Color, Rectangle
 from kivy.uix.floatlayout import FloatLayout
@@ -58,6 +59,7 @@ from lxml import etree
 import HTMLParser
 import zipfile
 import sys
+import re
 import os
 import lxml.html
 import ftplib
@@ -65,6 +67,7 @@ import threading
 import time
 import urllib
 #VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-morgen/subst_001.htm"
+NEWSSITE = "https://schollgym.lima-city.de/appdata/updates.html"
 VPWEBSITE = " http://vertretung.lornsenschule.de/schueler/f1/subst_001.htm"
 MAINWEBSITE = "http://www.schollgym.de"
 ZOOMWEBSITE = "http://zeitung.schollgym.de"
@@ -74,12 +77,22 @@ inprogress = False
 platform = "android"
 
 
+class dummys:
+    def toast(msg):
+        pass
 
-from jnius import autoclass
-PythonActivity = autoclass('org.renpy.android.PythonActivity')
-
-def toast(msg):
+def toast_android(msg):
     PythonActivity.toastError(msg)
+
+
+if sys.platform == "win32":
+    print("USING WINDOWS PLATFORM. ABORTING ANDROID STUFF")
+    toast = dummys.toast
+else:
+    from jnius import autoclass
+    PythonActivity = autoclass('org.renpy.android.PythonActivity')
+    toast = toast_ansdroid
+
 
 
 
@@ -299,6 +312,16 @@ def vpthread():
          startprog("Offline")
          log("Offline: Not fetched "+str(ZOOMWEBSITE))
          sleep(2,stopprog)
+         return 0
+    if not notshowp:
+        startprog("Lade\nNews")
+    try:
+        urllib.urlretrieve(NEWSSITE,"/sdcard/.schollgymde/news")
+    except:
+        startprog("Offline")
+        log("Offline: Not fetched "+str(NEWSSITE))
+        sleep(2,stopprog)
+        return 0
     stopprog()
 def parse():
     vpfile = open("/sdcard/.schollgymde/vp","r")
@@ -355,6 +378,7 @@ def fillvp(l):
     for item in l:
          # one item is one part of vp
          vpinf.text = vpinf.text + item[0] + ". Std: "+item[1] + ": "+item[2]+"\n"
+    #readnews()
 
 class TableParser(HTMLParser.HTMLParser):
      def __init__(self):
@@ -421,6 +445,7 @@ def openprog(KEY=""):
     am2.start(progimg)
 def stopprog(KEY=""):
     global inprogress, proglabel
+    sleep(1,readnews)
     inprogress = False
     am = Animation(duration=.5,pos_hint={"x":.25,"y":-.4},color=(1,1,1,0),t="in_quad")
     am.start(proglabel)
@@ -515,11 +540,13 @@ def writets():
     global tstowrite, term
     for letter in tstowrite:
         term.text += letter
-        time.sleep(0.01)
-def ts(text):
-    global sm, term, tstowrite
+        time.sleep(tstowait)
+def ts(text,wait=0.01):
+    global sm, term, tstowrite, tstowait
+    tstowait = wait
     tstowrite = text
     threading.Thread(target=writets).start()
+    return len(text)*wait
 
 
 
@@ -550,6 +577,53 @@ def showdeny():
     secac.add_widget(denyframe)
     time.sleep(1.5)
     secac.remove_widget(denyframe)
+
+def ts2(text,wait=0):
+    global term
+    term.text += text
+
+
+def firecmd(cmd):
+    global sm, usrid, oldusrid
+    oldusrid = usrid
+    HELP = "\nhelp - Print this help\nlogout - Log out from the ADSAC\nexit - Exit the app\nusr [user id] - Set the current working account\nregister [name] [content: optional]\ncat [name]"
+    if cmd == "logout":
+        term.text = ""
+        termin.text = "COMMAND INPUT"
+        sm.current = "mainscreen"
+    elif cmd == "help":
+        ts2(HELP+"\n",0.00)
+    elif cmd == "exit":
+        exitapp()
+    elif re.search("^usr ",cmd):
+        usrid = cmd.replace("usr ","")
+    elif re.search("^register ",cmd):
+        cmd = cmd.split(" ")
+        if len(cmd) < 2:
+            ts2("Not enough arguments. Min. 1 expected\n",0.00)
+            return 0
+        if len(cmd) == 2:
+            cmd.append("")
+        sacdata(cmd[1],cmd[2])
+    elif re.search("^cat ",cmd):
+        cmd = cmd.split(" ")
+        t = acdata(cmd[1])
+        if t == False:
+            ts2("IOError: No such file or directory\n",0.00)
+        else:
+            ts2("Content of specified file:\n-----------------------------\n"+str(t),0.00)
+        
+
+    ts2("ADSAC $ ",0.00)
+
+def termcmd(KEY=""):
+    cmd = termin.text
+    termin.text = ""
+    #towait = ts(cmd+"\n")
+    term.text += cmd + "\n"
+    #sleep(towait,lambda KEY: firecmd(cmd))
+    firecmd(cmd)
+
 
 def wronglogin(KEY=""):
     global sm
@@ -590,9 +664,66 @@ def termlogon(KEY=""):
     #sleep(5,wronglogin)
 
 
+
+
+def readnews(KEY=""):
+    global mainscroll, newsblocks, news, mainblock
+    print("========================== READING NEWS ==============================")
+    if os.path.isfile("/sdcard/.schollgymde/news") == False:
+        print("NO NEWS")
+        return 0
+    news = []
+    file = open("/sdcard/.schollgymde/news","r")
+    for line in file:
+        line = line[:-1]
+        if re.search("^//",line):
+            continue
+        if line == "":
+            continue
+        line = line.split("::")
+        news.append([line[0],line[1].replace("\\n","\n")])
+    print(news)
+    newscntr = 0
+    count = False
+    if len(news) > 5:
+        count = True
+    for new in news:
+        newsblocks[newscntr] = RootWidget()
+        newsblocks[newscntr].setbg(newsblocks[newscntr],(.98,.98,.98,1))
+        headline = Label(text=new[0],pos_hint={"x":0,"y":.4},color=(0,0,0,1))
+        top = .2
+        if len(new[1].split("\n")) > 1:
+            for i in range(len(new[1].split("\n"))):
+                top = top - .1
+        content = Label(text=new[1],markup=True,pos_hint={"x":0,"y":.2},halign="center",shorten=True,color=(0,0,0,1))
+        newsblocks[newscntr].add_widget(headline)
+        newsblocks[newscntr].add_widget(content)
+        mainblock.add_widget(newsblocks[newscntr])
+        newscntr += 1
+        if count:
+            if newscntr > 6:
+                mainblock.size_hint = (1, float(mainblock.size_hint[1])+0.2)
+    
+
+
+
 vpisopen = False
 winsize = (Window.width,Window.height)
 sm = ScreenManagerExtended()
+
+
+
+
+#news = [["SCHOLL","Gymnasium fuehrt App ein"],["JO","JO IST COOL"],["BLA","BLA CAR"],["1","1"],["2","2"],["3","3"],["4","4"]]
+#for i in range(30):
+#    news.append(["6","6"])
+
+mainscroll = ScrollView(size_hint=(.9,.9),pos_hint={"x":.05,"y":0})
+mainblock = GridLayout(size_hint=(1,1),spacing=3,pos_hint={"x":0,"y":0},cols=1)
+mainscroll.add_widget(mainblock)
+newsblocks = {}
+#readnews()
+
 
 
 denyframe = RootWidget()
@@ -608,6 +739,7 @@ term = TextInput(background_normal="",text="",background_color=(0,0,0,1),foregro
 terms.add_widget(term)
 termin = TextInput(background_normal="",text="COMMAND INPUT",background_color=(0,0,0,1),foreground_color=(0,.8,0,1),size_hint=(1,.08),pos_hint={"x":0,"y":0},multiline=False)
 terms.add_widget(termin)
+termin.bind(on_text_validate=termcmd)
 secac = NewScreen(name="secac")
 
 
@@ -682,6 +814,7 @@ liclabel.text = LICENSE
 
 mainscreen = NewScreen(name="mainscreen")
 mainscreen.setbg(mainscreen,(1,1,1,1))
+mainscreen.add_widget(mainscroll)
 logonscreen = NewScreen(name="logonscreen")
 sc = Image(source="school_white.png")
 sm.add_widget(logonscreen)
@@ -779,10 +912,11 @@ class MainApp(App):
     def build(self):
         global sm, CLASS
         if platform == 'android':
-            from android import AndroidService
-            service = AndroidService('Vertretungsplan wird kontrolliert', 'Keine Benachrichtigung, Wenn Meldung weg ist.')
-            service.start('service started')
-            self.service = service
+            if sys.platform != "win32":
+                from android import AndroidService
+                service = AndroidService('Vertretungsplan wird kontrolliert', 'Keine Benachrichtigung, Wenn Meldung weg ist.')
+                service.start('service started')
+                self.service = service
         if os.path.isfile("/sdcard/.schollgymde/licac"):
             if os.path.isfile("/sdcard/.schollgymde/sets"):
                 clf = open( "/sdcard/.schollgymde/sets","r")
