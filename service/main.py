@@ -60,9 +60,9 @@ def parse():
     formyclass = False
     subjcntr = 0
     nowsubj = []
-    endsubj = 6
+    endsubj = 8
     for subj in parsed:
-        if subj == CLASS:
+        if subj == "Klasse "+CLASS:
             # Subjects for the class
             formyclass = True
             continue
@@ -81,8 +81,9 @@ def parse():
             elif subj[1] in alphabet:
                    # Muster: 5b NumLetter
                    # => Not searched
-                   formyclass = False
-                   continue
+                   if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
+                       formyclass = False
+                       continue
         if subj == "x":
               subj = subj2
         if formyclass:
@@ -131,7 +132,7 @@ def fill(l):
     n = ""
     #notification.notify(title="hallo",message="end of parsing fill")
     for item in l:
-        n+= item[0]+". "+item[2] + ", "
+        n+= item[2]+". "+item[6] + ", "
     if len(l) > 4:
         n = str(len(l))+ "Vertretungen"
     if n != oldn:

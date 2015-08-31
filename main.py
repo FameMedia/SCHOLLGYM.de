@@ -68,7 +68,8 @@ import time
 import urllib
 #VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-morgen/subst_001.htm"
 NEWSSITE = "https://schollgym.lima-city.de/appdata/updates.html"
-VPWEBSITE = " http://vertretung.lornsenschule.de/schueler/f1/subst_001.htm"
+#VPWEBSITE = " http://vertretung.lornsenschule.de/schueler/f1/subst_001.htm"
+VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-heute/subst_001.htm"
 MAINWEBSITE = "http://www.schollgym.de"
 ZOOMWEBSITE = "http://zeitung.schollgym.de"
 threads = []
@@ -334,10 +335,13 @@ def parse():
     formyclass = False
     subjcntr = 0
     nowsubj = []
-    endsubj = 6
+    endsubj = 8
     for subj in parsed:
-        if subj == CLASS:
+        #print(subj)
+        #print(subj+" != "+"Klasse "+CLASS)
+        if subj == "Klasse "+CLASS:
             # Subjects for the class
+            #print("IN CLASS")
             formyclass = True
             continue
         elif len(subj) < 4:
@@ -355,8 +359,9 @@ def parse():
             elif subj[1] in alphabet:
                    # Muster: 5b NumLetter
                    # => Not searched
-                   formyclass = False
-                   continue
+                   if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
+                       formyclass = False
+                       continue
         if subj == "x":
               subj = subj2
         if formyclass:
@@ -377,7 +382,8 @@ def fillvp(l):
         vpinf.text = "" #remove no vp message
     for item in l:
          # one item is one part of vp
-         vpinf.text = vpinf.text + item[0] + ". Std: "+item[1] + ": "+item[2]+"\n"
+         print("INF: "+str(item))
+         vpinf.text = vpinf.text + item[2] + ". Std: "+item[1] + ": "+item[6]+"\n"
     #readnews()
 
 class TableParser(HTMLParser.HTMLParser):
