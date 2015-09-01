@@ -18,14 +18,17 @@ import lxml.html
 import threading
 import time
 import urllib
-#VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-morgen/subst_001.htm"
-VPWEBSITE = "http://vertretung.lornsenschule.de/schueler/f1/subst_001.htm"
+VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-morgen/subst_001.htm"
+#VPWEBSITE = "http://vertretung.lornsenschule.de/schueler/f1/subst_001.htm"
 MAINWEBSITE = "http://www.schollgym.de"
 ZOOMWEBSITE = "http://zeitung.schollgym.de"
 nums = "1234567890"
 alphabet = "abcdefghijklmnopqrstuvwxyz"
+clf = open( "/sdcard/.schollgymde/sets","r")
+CLASS = clf.read()
+clf.close()
 
-CLASS = "05d"
+#CLASS = "05d"
 
 oldn = ""
 
@@ -60,32 +63,42 @@ def parse():
     formyclass = False
     subjcntr = 0
     nowsubj = []
-    endsubj = 8
+    endsubj = 10
     for subj in parsed:
         if subj == "Klasse "+CLASS:
             # Subjects for the class
             formyclass = True
             continue
-        elif len(subj) < 4:
-           if len(subj) == 1:
-              subj2 = subj
-              subj = "x"
-           if subj[0] in nums:
-            if subj[1] in nums:
-               if len(subj) == 3:
-                if subj[2] in alphabet:
-                   # Muster: 10a NumNumLetter
-                   # => not searched class but another
-                   formyclass = False
-                   continue
-            elif subj[1] in alphabet:
-                   # Muster: 5b NumLetter
-                   # => Not searched
-                   if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
-                       formyclass = False
-                       continue
-        if subj == "x":
-              subj = subj2
+#        elif len(subj) < 4:
+#           if len(subj) == 1:
+ #             subj2 = subj
+ ##             subj = "x"
+ #          if subj[0] in nums:
+ #           if subj[1] in nums:
+  ##             if len(subj) == 3:
+  #              if subj[2] in alphabet:
+  #                 # Muster: 10a NumNumLetter
+   #                # => not searched class but another
+   ##                formyclass = False
+   #                continue
+   #         elif subj[1] in alphabet:
+   #                # Muster: 5b NumLetter
+    #               # => Not searched
+    ##               if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
+    #                   formyclass = False
+    #                   continue
+    #    if subj == "x":
+    #          subj = subj2
+        elif re.search("^Klasse ",subj):
+                if formyclass:
+                    if subjcntr < endsubj:
+                        parts.append(nowsubj)
+                        nowsubj = []
+                        subjcntr = 0
+                print("went out: "+subj+" my class: "+CLASS)
+                formyclass = False
+                continue
+
         if formyclass:
          subjcntr += 1
          nowsubj.append(subj)

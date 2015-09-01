@@ -66,10 +66,10 @@ import ftplib
 import threading
 import time
 import urllib
-#VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-morgen/subst_001.htm"
+VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-morgen/subst_001.htm"
 NEWSSITE = "https://schollgym.lima-city.de/appdata/updates.html"
 #VPWEBSITE = " http://vertretung.lornsenschule.de/schueler/f1/subst_001.htm"
-VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-heute/subst_001.htm"
+#VPWEBSITE = "http://planung.schollgym.de/plaene/Anzeige-Homepage/Schueler-heute/subst_001.htm"
 MAINWEBSITE = "http://www.schollgym.de"
 ZOOMWEBSITE = "http://zeitung.schollgym.de"
 threads = []
@@ -92,7 +92,7 @@ if sys.platform == "win32":
 else:
     from jnius import autoclass
     PythonActivity = autoclass('org.renpy.android.PythonActivity')
-    toast = toast_ansdroid
+    toast = toast_android
 
 
 
@@ -290,6 +290,7 @@ def vpthread():
     else:
         startprog("Lade\nVertretungsplan")
     try:
+        os.remove("/sdcard/.schollgymde/vp")
         urllib.urlretrieve(VPWEBSITE,"/sdcard/.schollgymde/vp")
     except:
          startprog("Offline")
@@ -335,7 +336,7 @@ def parse():
     formyclass = False
     subjcntr = 0
     nowsubj = []
-    endsubj = 8
+    endsubj = 10
     for subj in parsed:
         #print(subj)
         #print(subj+" != "+"Klasse "+CLASS)
@@ -344,29 +345,40 @@ def parse():
             #print("IN CLASS")
             formyclass = True
             continue
-        elif len(subj) < 4:
-           if len(subj) == 1:
-              subj2 = subj
-              subj = "x"
-           if subj[0] in nums:
-            if subj[1] in nums:
-               if len(subj) == 3:
-                if subj[2] in alphabet:
-                   # Muster: 10a NumNumLetter
-                   # => not searched class but another
-                   formyclass = False
-                   continue
-            elif subj[1] in alphabet:
-                   # Muster: 5b NumLetter
-                   # => Not searched
-                   if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
-                       formyclass = False
-                       continue
-        if subj == "x":
-              subj = subj2
+        #elif len(subj) < 4:
+        #   if len(subj) == 1:
+        #      subj2 = subj
+        #      subj = "x"
+         #  if subj[0] in nums:
+         ##   if subj[1] in nums:
+        #       if len(subj) == 3:
+        ##        if subj[2] in alphabet:
+        #           # Muster: 10a NumNumLetter
+        #           # => not searched class but another
+        #           formyclass = False
+         #          continue
+         ##   elif subj[1] in alphabet:
+         #          # Muster: 5b NumLetter
+         #          # => Not searched
+         #          if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
+         #              print("out of class")
+         #              formyclass = False
+         #              continue
+        elif re.search("^Klasse ",subj):
+                if formyclass:
+                    if subjcntr < endsubj:
+                        parts.append(nowsubj)
+                        nowsubj = []
+                        subjcntr = 0
+                print("went out: "+subj+" my class: "+CLASS)
+                formyclass = False
+                continue
+        #if subj == "x":
+        #      subj = subj2
         if formyclass:
          subjcntr += 1
          nowsubj.append(subj)
+         #print(subj)
          if subjcntr == endsubj:
                   parts.append(nowsubj)
                   nowsubj = []
