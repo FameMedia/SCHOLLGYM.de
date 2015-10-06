@@ -336,36 +336,15 @@ def parse():
     formyclass = False
     subjcntr = 0
     nowsubj = []
+    donotweekday = True
     endsubj = 10
     for subj in parsed:
-        #print(subj)
-        #print(subj+" != "+"Klasse "+CLASS)
         if subj == "Klasse "+CLASS:
-            # Subjects for the class
-            #print("IN CLASS")
             formyclass = True
             continue
-        #elif len(subj) < 4:
-        #   if len(subj) == 1:
-        #      subj2 = subj
-        #      subj = "x"
-         #  if subj[0] in nums:
-         ##   if subj[1] in nums:
-        #       if len(subj) == 3:
-        ##        if subj[2] in alphabet:
-        #           # Muster: 10a NumNumLetter
-        #           # => not searched class but another
-        #           formyclass = False
-         #          continue
-         ##   elif subj[1] in alphabet:
-         #          # Muster: 5b NumLetter
-         #          # => Not searched
-         #          if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
-         #              print("out of class")
-         #              formyclass = False
-         #              continue
         elif re.search("^Klasse ",subj):
                 if formyclass:
+                    print("Myclass")
                     if subjcntr < endsubj:
                         parts.append(nowsubj)
                         nowsubj = []
@@ -373,8 +352,6 @@ def parse():
                 print("went out: "+subj+" my class: "+CLASS)
                 formyclass = False
                 continue
-        #if subj == "x":
-        #      subj = subj2
         if formyclass:
          subjcntr += 1
          nowsubj.append(subj)
@@ -383,19 +360,68 @@ def parse():
                   parts.append(nowsubj)
                   nowsubj = []
                   subjcntr = 0
+                  donotweekday = True
+         if subj in ["Mo","Di","Mi","Do","Fr"]:
+                if donotweekday == False:
+                    nowsubj = nowsubj[:-1]
+                    parts.append(nowsubj)
+                    nowsubj = [subj]
+                    subjcntr = 0
+                else:
+                    donotweekday = False
     log(str(parts))
     fillvp(parts)
 
 
-
+def pressedvp(instance,value):
+    global vpinf, vpdetail
+    touse = vplist[int(value)]
+    vpdetail.markup = True
+    vpdetail.text = "[ref=Noname]"
+    for i in range(8):
+        try:
+            if i == 0:
+                continue
+            if i == 1:
+                vpdetail.text += "Aenderungstyp: "
+            if i == 2:
+                vpdetail.text += "Stunde: "
+            if i == 3:
+                continue
+            if i == 4:
+                vpdetail.text += "Bei Lehrer: "
+            if i == 5:
+                vpdetail.text += "Fach: "
+            if i == 6:
+                vpdetail.text += "in Raum: "
+            if i == 7:
+                vpdetail.text += "statt Fach: "
+            vpdetail.text += touse[i] + "\n"
+        except:
+            None
+    vpdetail.text += "[/ref]"
+    am = Animation(pos_hint={"x":0,"y":2})
+    am2 = Animation(pos_hint={"x":0,"y":0})
+    am.start(vpinf)
+    am2.start(vpdetail)
+def pressedvpdetails(instance,value):
+    global vpinf, vpdetail
+    am = Animation(pos_hint={"x":0,"y":0})
+    am2 = Animation(pos_hint={"x":3,"y":0})
+    am.start(vpinf)
+    am2.start(vpdetail) 
 def fillvp(l):
-    global vpinf
+    global vpinf, vplist
+    vplist = l
+    vpinf.markup = True
     if len(l) != 0:
         vpinf.text = "" #remove no vp message
+    itemcntr = 0
     for item in l:
          # one item is one part of vp
          print("INF: "+str(item))
-         vpinf.text = vpinf.text + item[2] + ". Std: "+item[1] + ": "+item[6]+"\n"
+         vpinf.text = vpinf.text + "[ref=" + str(itemcntr) +"]"+ str(item[2]) + ". Std: "+item[1] + ": "+item[5]+"[/ref]\n"
+         itemcntr +=  1
     #readnews()
 
 class TableParser(HTMLParser.HTMLParser):
@@ -849,7 +875,12 @@ vpframe.size_hint = .7,.7
 vpframe.pos_hint = {"x":1,"y":1}
 vpinf = Label(text="KEIN\nVERTRETUNGSPLAN\nVORHANDEN",color=(0,0,0,1),font_size="20sp")
 vpinf.pos_hint = {"x":0,"y":0}
+vpinf.bind(on_ref_press=pressedvp)
+vpdetail = Label(text="No Detais",color=(0,0,0,1),font_size="20sp")
+vpdetail.pos_hint={"x":3,"y":0}
+vpdetail.bind(on_ref_press=pressedvpdetails)
 vpframe.add_widget(vpinf)
+vpframe.add_widget(vpdetail)
 mainscreen.add_widget(vpframe)
 mainscreen.add_widget(vpopenbt)
 titlelab = Label(text="SCHOLLGYM.de",font_size="20sp",color=(1,1,1,1))

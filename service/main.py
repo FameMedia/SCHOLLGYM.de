@@ -64,33 +64,14 @@ def parse():
     subjcntr = 0
     nowsubj = []
     endsubj = 10
+    donotweekday = True
     for subj in parsed:
         if subj == "Klasse "+CLASS:
-            # Subjects for the class
             formyclass = True
             continue
-#        elif len(subj) < 4:
-#           if len(subj) == 1:
- #             subj2 = subj
- ##             subj = "x"
- #          if subj[0] in nums:
- #           if subj[1] in nums:
-  ##             if len(subj) == 3:
-  #              if subj[2] in alphabet:
-  #                 # Muster: 10a NumNumLetter
-   #                # => not searched class but another
-   ##                formyclass = False
-   #                continue
-   #         elif subj[1] in alphabet:
-   #                # Muster: 5b NumLetter
-    #               # => Not searched
-    ##               if subj != "Mo" and subj != "Di" and subj != "Mi" and subj != "Do" and subj != "Fr" and subj != CLASS:
-    #                   formyclass = False
-    #                   continue
-    #    if subj == "x":
-    #          subj = subj2
         elif re.search("^Klasse ",subj):
                 if formyclass:
+                    print("Myclass")
                     if subjcntr < endsubj:
                         parts.append(nowsubj)
                         nowsubj = []
@@ -98,14 +79,23 @@ def parse():
                 print("went out: "+subj+" my class: "+CLASS)
                 formyclass = False
                 continue
-
         if formyclass:
          subjcntr += 1
          nowsubj.append(subj)
+         #print(subj)
          if subjcntr == endsubj:
                   parts.append(nowsubj)
                   nowsubj = []
                   subjcntr = 0
+                  donotweekday = True
+         if subj in ["Mo","Di","Mi","Do","Fr"]:
+                if donotweekday == False:
+                    nowsubj = nowsubj[:-1]
+                    parts.append(nowsubj)
+                    nowsubj = [subj]
+                    subjcntr = 0
+                else:
+                    donotweekday = False
     fill(parts)
 
 
@@ -145,7 +135,7 @@ def fill(l):
     n = ""
     #notification.notify(title="hallo",message="end of parsing fill")
     for item in l:
-        n+= item[2]+". "+item[6] + ", "
+        n+= item[2]+". "+item[5] + ", "
     if len(l) > 4:
         n = str(len(l))+ "Vertretungen"
     if n != oldn:
